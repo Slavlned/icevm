@@ -1,0 +1,61 @@
+package com.slavlend.Vm.Instructions;
+
+import com.slavlend.Vm.*;
+import lombok.Getter;
+
+/*
+Сохраняет значение в переменную в VM
+ */
+@Getter
+public class VmInstrStore implements VmInstr {
+    // адресс
+    private final VmInAddr addr;
+    // имя переменной
+    private final String name;
+    // есть ли предыдущий аксесс
+    private final boolean hasPrevious;
+    // для присваивания
+    private final VmVarContainer args;
+
+    // конструктор
+    public VmInstrStore(VmInAddr addr, String name, boolean hasPrevious, VmVarContainer args) {
+        this.addr = addr;
+        this.name = name;
+        this.hasPrevious = hasPrevious;
+        this.args = args;
+    }
+
+    @Override
+    public void run(IceVm vm, VmFrame<Object> frame) {
+        if (!hasPrevious) {
+            passArgs(vm, frame);
+            frame.set(name, vm.getStack().get().pop());
+        } else {
+            Object last = vm.pop();
+            if (last instanceof VmObj vmObj) {
+                passArgs(vm, frame);
+                vmObj.getScope().set(name, vm.getStack().get().pop());
+            } else {
+                passArgs(vm, frame);
+                ((VmClass) last).getModValues().set(name, vm.getStack().get().pop());
+            }
+        }
+    }
+
+    // помещает аргументы в стек
+    private void passArgs(IceVm vm, VmFrame<Object> frame) {
+        for (VmInstr instr : args.getVarContainer()) {
+            instr.run(vm, frame);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "STORE(" + name + ")";
+    }
+
+    @Override
+    public void print() {
+        System.out.println(this);
+    }
+}
