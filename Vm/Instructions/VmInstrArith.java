@@ -1,36 +1,36 @@
 package com.slavlend.Vm.Instructions;
 
-import com.slavlend.Parser.Operator;
 import com.slavlend.Vm.*;
 import lombok.Getter;
 
 /*
 Инструкция арифметической операции
  */
-@SuppressWarnings({"SpellCheckingInspection", "RedundantCast", "ConstantValue"})
+@SuppressWarnings({"SpellCheckingInspection", "UnnecessaryToStringCall", "ClassCanBeRecord", "UnnecessaryReturnStatement"})
 @Getter
 public class VmInstrArith implements VmInstr {
     // адресс
     private final VmInAddr addr;
     // оператор
-    private final Operator operator;
+    private final String operator;
 
-    public VmInstrArith(VmInAddr addr, Operator operator) {
+    public VmInstrArith(VmInAddr addr, String operator) {
         this.addr = addr;
         this.operator = operator;
     }
 
     @Override
     public void run(IceVm vm, VmFrame<Object> frame) {
-        Object r = vm.pop();
-        Object l = vm.pop();
+        Object r = vm.pop(addr);
+        Object l = vm.pop(addr);
         if (r == null) {
             r = "nil";
         }
         if (l == null) {
             l = "nil";
         }
-        switch (operator.operator) {
+        checkForTypes(r, l);
+        switch (operator) {
             case "+" -> {
                 if (l instanceof String || r instanceof String) {
                     vm.push(l.toString() + r.toString());
@@ -42,48 +42,31 @@ public class VmInstrArith implements VmInstr {
             case "*" -> vm.push((float)l * (float)r);
             case "/" -> vm.push((float)l / (float)r);
             case "%" -> vm.push((float)l % (float)r);
-            default -> IceVm.logger.error(addr, "operator not found: " + operator.operator);
+            default -> IceVm.logger.error(addr, "operator not found: " + operator);
+        }
+    }
+
+    // проверка на типы
+    private void checkForTypes(Object r, Object l) {
+        boolean stringOrFloatRight = !(r instanceof String) && !(r instanceof Float);
+        boolean stringOrFloatLeft = !(l instanceof String) && !(l instanceof Float);
+        if (stringOrFloatRight || (r instanceof String && !operator.equals("+"))) {
+            IceVm.logger.error(addr, "invalid value type for operator (" + operator + "): " + r);
+            return;
+        }
+        if (stringOrFloatLeft || (l instanceof String && !operator.equals("+"))) {
+            IceVm.logger.error(addr, "invalid value type for operator (" + operator + "): " + l);
+            return;
         }
     }
 
     @Override
     public void print() {
-        System.out.println("ARITH("+operator.operator+")");
-    }
-
-    public boolean equal(Object l, Object r) {
-        if (l instanceof String && r instanceof String) {
-            return ((String)l).equals(((String)r));
-        }
-        else if (l == null && r != null) {
-            return false;
-        }
-        else if (l != null && r == null) {
-            return false;
-        }
-        else if (l == null && r == null) {
-            return true;
-        }
-        else if (l instanceof VmObj && r instanceof VmObj) {
-            return (l == r);
-        }
-        else if (l instanceof Boolean && r instanceof Boolean) {
-            return (l == r);
-        }
-        else if (l instanceof Float && r instanceof Float) {
-            return (l == r);
-        }
-        else if (l instanceof VmClass && r instanceof VmClass) {
-            return (l == r);
-        }
-        else {
-            IceVm.logger.error(addr, "invalid comparable types: " + l + ", " + r);
-            return false;
-        }
+        System.out.println("ARITH("+operator+")");
     }
 
     @Override
     public String toString() {
-        return "ARITH(" + operator.operator + ")";
+        return "ARITH(" + operator + ")";
     }
 }

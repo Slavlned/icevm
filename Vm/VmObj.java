@@ -19,12 +19,12 @@ public class VmObj {
         this.clazz = clazz;
         this.addr = addr;
         for (int i = clazz.getConstructor().size()-1; i >= 0; i--) {
-            Object arg = vm.pop();
+            Object arg = vm.pop(addr);
             scope.set(clazz.getConstructor().get(i), arg);
         }
         scope.setRoot(vm.getVariables());
         if (clazz.getFunctions().getValues().containsKey("init")) {
-            call(addr, "init", vm);
+            call(addr, "init", vm, true);
         }
     }
 
@@ -33,7 +33,7 @@ public class VmObj {
      * @param name - имя функции
      * @param vm - ВМ
      */
-    public void call(VmInAddr inAddr, String name, IceVm vm) {
+    public void call(VmInAddr inAddr, String name, IceVm vm, boolean shouldPushResult) {
         // копируем и вызываем функцию
         VmFunction func;
         if (clazz.getFunctions().getValues().containsKey(name)) {
@@ -43,6 +43,6 @@ public class VmObj {
         }
         func.setDefinedFor(this);
         func.getScope().get().setRoot(scope);
-        func.exec(vm);
+        func.exec(vm, shouldPushResult);
     }
 }

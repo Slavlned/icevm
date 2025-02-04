@@ -48,27 +48,40 @@ public class VmFunction implements VmInstrContainer {
      * Выполнение функции
      * @param vm - ВМ
      */
-    public void exec(IceVm vm) {
+    public void exec(IceVm vm, boolean shouldPushResult) {
         scope.set(new VmFrame<>());
-        int argsAmountGot = 0;
-        for (int i = arguments.size()-1; i >= 0; i--) {
-            if (vm.getStack().get().isEmpty()) {
-                IceVm.logger.error(addr,
-                        "args and params not match: (expected:"+arguments.size()+",got:"+argsAmountGot+")");
-            }
-            Object arg = vm.pop();
-            argsAmountGot += 1;
-            scope.get().set(arguments.get(i), arg);
+        if (definedFor == null) {
+            getScope().get().setRoot(vm.getVariables());
         }
+        loadArgs(vm);
         if (definedFor != null) {
             scope.get().set("this", definedFor);
         }
         try {
+            // исполняем функцию
             for (VmInstr instr : instructions) {
                 instr.run(vm, scope.get());
             }
         } catch (VmInstrRet e) {
+            if (shouldPushResult) {
+                e.pushResult(vm, scope.get());
+            }
             return;
+        }
+    }
+
+    /**
+     * Загрузка аргументов в функции
+     */
+    private void loadArgs(IceVm vm) {
+        // загружаем аргументы
+        for (int i = arguments.size()-1; i >= 0; i--) {
+            if (vm.getStack().get().isEmpty()) {
+                IceVm.logger.error(addr,
+                        "stack is empty. cannot invoke function: " + name);
+            }
+            Object arg = vm.pop(addr);
+            scope.get().set(arguments.get(i), arg);
         }
     }
 

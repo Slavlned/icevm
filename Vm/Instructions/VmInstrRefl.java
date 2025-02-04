@@ -6,7 +6,7 @@ import lombok.Getter;
 /*
 Создание рефлексийного объекта
  */
-@SuppressWarnings("ClassCanBeRecord")
+@SuppressWarnings({"ClassCanBeRecord", "deprecation"})
 @Getter
 public class VmInstrRefl implements VmInstr {
     // адресс
@@ -24,9 +24,9 @@ public class VmInstrRefl implements VmInstr {
     public void run(IceVm vm, VmFrame<Object> frame) {
         // ищем класс
         try {
-            Object o = Class.forName(name).newInstance();
+            Object o = VmJvmClasses.lookup(addr, name).newInstance();
             vm.push(o);
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }

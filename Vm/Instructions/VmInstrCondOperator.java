@@ -22,8 +22,8 @@ public class VmInstrCondOperator implements VmInstr {
 
     @Override
     public void run(IceVm vm, VmFrame<Object> frame) {
-        Object r = vm.pop();
-        Object l = vm.pop();
+        Object r = vm.pop(addr);
+        Object l = vm.pop(addr);
         switch (operator.operator) {
             case "==" -> vm.push(equal(l, r));
             case "!=" -> vm.push(!equal(l, r));
@@ -62,7 +62,7 @@ public class VmInstrCondOperator implements VmInstr {
             return (((VmClass)l) == ((VmClass)r));
         }
         else {
-            throw new RuntimeException("invalid comparable types: " + l + ", " + r);
+            throw new RuntimeException("invalid comparables: " + l + ", " + r);
         }
     }
 

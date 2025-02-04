@@ -19,7 +19,7 @@ public class VmInstrPop implements VmInstr {
 
     @Override
     public void run(IceVm vm, VmFrame<Object> frame) {
-        vm.pop();
+        vm.pop(addr);
     }
 
     @Override

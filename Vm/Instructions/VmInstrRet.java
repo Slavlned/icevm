@@ -1,9 +1,6 @@
 package com.slavlend.Vm.Instructions;
 
-import com.slavlend.Vm.IceVm;
-import com.slavlend.Vm.VmFrame;
-import com.slavlend.Vm.VmInAddr;
-import com.slavlend.Vm.VmInstr;
+import com.slavlend.Vm.*;
 import lombok.Getter;
 
 /*
@@ -15,11 +12,19 @@ import lombok.Getter;
 @Getter
 public class VmInstrRet extends RuntimeException implements VmInstr {
     // адресс
+    private final VmVarContainer ret;
     private final VmInAddr addr;
 
     // конструктор
-    public VmInstrRet(VmInAddr addr) {
+    public VmInstrRet(VmVarContainer ret, VmInAddr addr) {
+        this.ret = ret;
         this.addr = addr;
+    }
+
+    public void pushResult(IceVm vm, VmFrame<Object> scope) {
+        for (VmInstr i : ret.getVarContainer()) {
+            i.run(vm, scope);
+        }
     }
 
     @Override

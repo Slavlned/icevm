@@ -40,7 +40,7 @@ public class VmInstrIf implements VmInstr, VmInstrContainer {
         for (VmInstr instr : condInstructions) {
             instr.run(vm, frame);
         }
-        Boolean bool = (Boolean) vm.pop();
+        Boolean bool = (Boolean) vm.pop(addr);
         if (bool) {
             for (VmInstr instr : instructions) {
                 instr.run(vm, frame);

@@ -1,6 +1,8 @@
 package com.slavlend.Vm;
 
 import com.slavlend.Compiler.Compiler;
+import com.slavlend.Vm.Instructions.VmInstrPush;
+import com.slavlend.Vm.Instructions.VmInstrStoreL;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -47,7 +49,15 @@ public class VmCode {
                 }
             }
             else {
-                IceVm.logger.error(addr,"cannot define functions in block, except class");
+                if (writeTo.lastElement() instanceof VmFunction vmFunc) {
+                    // загрузка функции в стек
+                    vmFunc.visitInstr(new VmInstrPush(addr, fn));
+                    // помещение функции "как переменная"
+                    vmFunc.visitInstr(new VmInstrStoreL(addr, fn.getName()));
+                }
+                else {
+                    IceVm.logger.error(addr, "cannot define function in block, except: class, function.");
+                }
             }
         }
     }

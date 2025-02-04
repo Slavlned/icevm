@@ -32,17 +32,17 @@ public class VmInstrLoad implements VmInstr {
             } else if (vm.getFunctions().has(name))  {
                 vm.push(vm.getFunctions().lookup(addr, name));
             } else {
-                IceVm.logger.error(addr, "not found: " + name);
+                IceVm.logger.error(addr, "var not found: " + name);
             }
         } else {
-            Object last = vm.pop();
+            Object last = vm.pop(addr);
             if (last instanceof VmObj vmObj) {
                 if (vmObj.getScope().has(name)) {
                     vm.push(vmObj.getScope().lookup(addr, name));
                 } else if (vmObj.getClazz().getFunctions().has(name)) {
                     vm.push(vmObj.getClazz().getFunctions().lookup(addr, name));
                 } else {
-                    IceVm.logger.error(addr, "not found: " + name);
+                    IceVm.logger.error(addr, "var not found: " + name);
                 }
             } else {
                 VmClass clazz = (VmClass) last;
