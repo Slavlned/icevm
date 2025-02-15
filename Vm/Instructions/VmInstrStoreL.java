@@ -1,7 +1,10 @@
 package com.slavlend.Vm.Instructions;
 
-import com.slavlend.Vm.*;
 import lombok.Getter;
+import com.slavlend.Vm.IceVm;
+import com.slavlend.Vm.VmFrame;
+import com.slavlend.Vm.VmInAddr;
+import com.slavlend.Vm.VmInstr;
 
 /*
 Сохраняет значение в ТОЛЬКО ЛОКАЛЬНУЮ переменную в VM
@@ -20,7 +23,7 @@ public class VmInstrStoreL implements VmInstr {
     }
 
     @Override
-    public void run(IceVm vm, VmFrame<Object> frame) {
+    public void run(IceVm vm, VmFrame<String, Object> frame) {
         frame.getValues().put(name, vm.pop(addr));
     }
 

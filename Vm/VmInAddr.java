@@ -10,5 +10,15 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class VmInAddr {
+    // линия
     private final int line;
+
+    // в строку
+
+    @Override
+    public String toString() {
+        return "VmInAddr{" +
+                "line=" + line +
+                '}';
+    }
 }

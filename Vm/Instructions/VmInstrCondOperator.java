@@ -21,7 +21,7 @@ public class VmInstrCondOperator implements VmInstr {
     }
 
     @Override
-    public void run(IceVm vm, VmFrame<Object> frame) {
+    public void run(IceVm vm, VmFrame<String, Object> frame) {
         Object r = vm.pop(addr);
         Object l = vm.pop(addr);
         switch (operator.operator) {
@@ -62,7 +62,8 @@ public class VmInstrCondOperator implements VmInstr {
             return (((VmClass)l) == ((VmClass)r));
         }
         else {
-            throw new RuntimeException("invalid comparables: " + l + ", " + r);
+            // throw new RuntimeException("invalid comparables: " + l + ", " + r);
+            return false;
         }
     }
 

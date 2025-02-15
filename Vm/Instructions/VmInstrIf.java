@@ -36,7 +36,7 @@ public class VmInstrIf implements VmInstr, VmInstrContainer {
     }
 
     @Override
-    public void run(IceVm vm, VmFrame<Object> frame) {
+    public void run(IceVm vm, VmFrame<String, Object> frame) {
         for (VmInstr instr : condInstructions) {
             instr.run(vm, frame);
         }

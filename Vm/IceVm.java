@@ -15,24 +15,28 @@ public class IceVm {
     // стек объектов
     private final ThreadLocal<Stack<Object>> stack = new ThreadLocal<>();
     // хранилище
-    private final VmFrame<Object> variables = new VmFrame<>();
-    private final VmFrame<VmFunction> functions = new VmFrame<>();
-    private final VmFrame<VmClass> classes = new VmFrame<>();
-    private final VmFrame<VmCoreFunction> coreFunctions = new VmFrame<>();
+    private final VmFrame<String, Object> variables = new VmFrame<>();
+    private final VmFrame<String, VmFunction> functions = new VmFrame<>();
+    private final VmFrame<String, VmClass> classes = new VmFrame<>();
+    private final VmFrame<String, VmCoreFunction> coreFunctions = new VmFrame<>();
     // рэйс ошибок
     @Setter
     public static VmErrRaiser raiser = new VmErrRaiser();
     // логгер
     @Setter
     public static VmErrLogger logger;
-    // адресс возврата
-    private final ThreadLocal<Object> returnAddress = new ThreadLocal<>();
+    // адресс последнего вызова функции
+    private final ThreadLocal<VmInAddr> lastCallAddr = new ThreadLocal<>();
 
     /**
-     * Помещение значения в адресс возврата
+     * Указание адресса последнего вызова функции
      */
-    public void ret(Object o) {
-        returnAddress.set(o);
+    public void setLastCallAddress(VmInAddr addr) {
+        lastCallAddr.set(addr);
+    }
+
+    public VmInAddr getLastCallAddr() {
+        return lastCallAddr.get();
     }
 
     /**
@@ -60,11 +64,13 @@ public class IceVm {
             // выводим время исполнения
             System.out.println();
             System.out.println(
-                    Colors.ANSI_BLUE + "🧊 Exec time: " + benchmark.end() + ", stack size: "
+                    Colors.ANSI_BLUE + "🧊 Exec time: " + benchmark.end() + "ms, stack size: "
                             + stack.get().size() + "(" + stack.get().toString() + ")" + Colors.ANSI_RESET
             );
         } catch (VmException exception) {
             logger.error(exception.getAddr(), exception.getMessage());
+        } catch (RuntimeException exception) {
+            logger.error(new VmInAddr(-1), "java exception (" + exception.getMessage() + ")", exception);
         }
     }
 
@@ -119,9 +125,9 @@ public class IceVm {
      * @return - отдаёт объект с верхушки стека
      */
     public Object pop(VmInAddr addr) {
-        // if (stack().empty()) {
-            // raiser.error(addr, "stack is empty here (did you forgot back statement?)");
-        // }
+        if (stack().empty()) {
+            logger.error(addr, "stack is empty here.", new RuntimeException("EmptyStack"));
+        }
         return stack().pop();
     }
 
@@ -130,14 +136,9 @@ public class IceVm {
      * @param frame - фрейм, для поиска переменной
      * @param name - имя переменной для поиска
      */
-    public void load(VmInAddr addr, VmFrame<Object> frame, String name) {
+    public void load(VmInAddr addr, VmFrame<String, Object> frame, String name) {
         stack().push(frame.lookup(addr, name));
     }
-
-    /**
-     * Получение следующей инструкции
-     *
-     */
 
     /**
      * Получение стека текущего потока

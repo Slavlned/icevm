@@ -32,7 +32,10 @@ public class VmInstrCall implements VmInstr {
     }
 
     @Override
-    public void run(IceVm vm, VmFrame<Object> frame) {
+    public void run(IceVm vm, VmFrame<String, Object> frame) {
+        // установка последнего аддресса вызова
+        vm.setLastCallAddress(addr);
+        // вызов
         if (!hasPrevious) {
             callGlobalFunc(vm, frame);
         } else {
@@ -48,7 +51,7 @@ public class VmInstrCall implements VmInstr {
     }
 
     // Вызывает функцю объекта
-    private void callObjFunc(IceVm vm, VmFrame<Object> frame, VmObj vmObj) {
+    private void callObjFunc(IceVm vm, VmFrame<String, Object> frame, VmObj vmObj) {
         // аргументы
         int argsAmount = passArgs(vm, frame);
         VmFunction fn;
@@ -63,14 +66,14 @@ public class VmInstrCall implements VmInstr {
     }
 
     // Вызывает функцю класса
-    private void callClassFunc(IceVm vm, VmFrame<Object> frame, VmClass vmClass) {
+    private void callClassFunc(IceVm vm, VmFrame<String, Object> frame, VmClass vmClass) {
         // аргументы
         int argsAmount = passArgs(vm, frame);
         VmFunction fn;
         if (vmClass.getModFunctions().has(name)) {
             fn = vmClass.getModFunctions().lookup(addr, name);
         } else {
-            fn = (VmFunction)vmClass.getModValues().lookup(addr, name);
+            fn = (VmFunction)vmClass.getModValues().lookup(addr, name).get();
         }
         checkArgs(fn.getArguments().size(), argsAmount);
         // вызов модульной функции
@@ -78,7 +81,7 @@ public class VmInstrCall implements VmInstr {
     }
 
     // Вызывает рефлексийную функцию
-    private void callReflectionFunc(IceVm vm, VmFrame<Object> frame, Object last) {
+    private void callReflectionFunc(IceVm vm, VmFrame<String, Object> frame, Object last) {
         // аргументы
         int argsAmount = passArgs(vm, frame);
         ArrayList<Object> callArgs = new ArrayList<>();
@@ -104,17 +107,20 @@ public class VmInstrCall implements VmInstr {
             try {
                 Object returned = func.invoke(last, callArgs.toArray());
                 // 👇 НЕ ВОЗВРАЩАЕТ NULL, ЕСЛИ ФУНКЦИЯ НИЧЕГО НЕ ВОЗВРАЩАЕТ
-                if (returned != null) {
+                if (shouldPushResult) {
                     vm.push(returned);
                 }
-            } catch (IllegalAccessException | InvocationTargetException e) {
+            } catch (IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
+                if (e.getCause() == null) {
+                    IceVm.logger.error(addr, e.getMessage());
+                }
                 IceVm.logger.error(addr, e.getCause().getMessage());
             }
         }
     }
 
     // Вызов функции из глобального скоупа
-    private void callGlobalFunc(IceVm vm, VmFrame<Object> frame) {
+    private void callGlobalFunc(IceVm vm, VmFrame<String, Object> frame) {
         if (frame.has(name)) {
             // аргументы
             int argsAmount = passArgs(vm, frame);
@@ -150,7 +156,7 @@ public class VmInstrCall implements VmInstr {
     }
 
     // помещает аргументы в стек
-    private int passArgs(IceVm vm, VmFrame<Object> frame) {
+    private int passArgs(IceVm vm, VmFrame<String, Object> frame) {
         int size = vm.stack().size();
         for (VmInstr instr : args.getVarContainer()) {
             instr.run(vm, frame);

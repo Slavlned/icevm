@@ -29,7 +29,7 @@ public class VmInstrSafe implements VmInstr, VmInstrContainer {
     }
 
     @Override
-    public void run(IceVm vm, VmFrame<Object> frame) {
+    public void run(IceVm vm, VmFrame<String, Object> frame) {
         try {
             for (VmInstr instr : instructions) {
                 instr.run(vm, frame);
@@ -37,13 +37,13 @@ public class VmInstrSafe implements VmInstr, VmInstrContainer {
         } catch (VmThrowable throwable) {
             vm.push(throwable.getThrowableValue());
             handle(vm, frame);
-        } catch (VmException exception) {
+        } catch (RuntimeException exception) {
             vm.push(exception.getMessage());
             handle(vm, frame);
         }
     }
 
-    private void handle(IceVm vm, VmFrame<Object> frame) {
+    private void handle(IceVm vm, VmFrame<String, Object> frame) {
         for (VmInstr instr : handleInstructions) {
             instr.run(vm, frame);
         }

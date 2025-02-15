@@ -23,7 +23,7 @@ public class VmInstrLoopEnd extends RuntimeException implements VmInstr {
     }
 
     @Override
-    public void run(IceVm vm, VmFrame<Object> scope) {
+    public void run(IceVm vm, VmFrame<String, Object> scope) {
         throw this;
     }
 

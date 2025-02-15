@@ -22,7 +22,7 @@ public class VmInstrLoad implements VmInstr {
     }
 
     @Override
-    public void run(IceVm vm, VmFrame<Object> frame) {
+    public void run(IceVm vm, VmFrame<String, Object> frame) {
         if (!hasPrevious) {
             if (frame.has(name)) {
                 vm.load(addr, frame, name);
@@ -47,9 +47,11 @@ public class VmInstrLoad implements VmInstr {
             } else {
                 VmClass clazz = (VmClass) last;
                 if (clazz.getModValues().has(name)) {
-                    vm.push(clazz.getModValues().lookup(addr, name));
+                    vm.push(clazz.getModValues().lookup(addr, name).get());
                 } else if (clazz.getModFunctions().has(name)){
                     vm.push(clazz.getModFunctions().lookup(addr, name));
+                } else {
+                    IceVm.logger.error(addr, "var not found: " + name);
                 }
             }
         }

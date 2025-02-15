@@ -1,6 +1,7 @@
 package com.slavlend.Vm;
 
 
+import com.slavlend.Compiler.Compiler;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -21,5 +22,12 @@ public class VmVarContainer implements VmInstrContainer{
     @Override
     public void visitInstr(VmInstr instr) {
         this.varContainer.add(instr);
+    }
+
+    public Object exec() {
+        for (VmInstr instr : varContainer) {
+            instr.run(Compiler.iceVm, Compiler.iceVm.getVariables());
+        }
+        return Compiler.iceVm.pop(new VmInAddr(-1));
     }
 }

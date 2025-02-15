@@ -24,10 +24,12 @@ public class VmInstrNewObj implements VmInstr {
     }
 
     @Override
-    public void run(IceVm vm, VmFrame<Object> frame) {
+    public void run(IceVm vm, VmFrame<String, Object> frame) {
         // конструктор
-        passArgs(vm, frame);
-        vm.push(new VmObj(vm, vm.getClasses().lookup(addr, className), addr));
+        int amount = passArgs(vm, frame);
+        VmClass clazz = vm.getClasses().lookup(addr, className);
+        checkArgs(clazz.getConstructor().size(), amount);
+        vm.push(new VmObj(vm, clazz, addr));
     }
 
     @Override
@@ -40,9 +42,20 @@ public class VmInstrNewObj implements VmInstr {
         return "INST(" + className + "," + args.getVarContainer().size() + ")";
     }
 
-    private void passArgs(IceVm vm, VmFrame<Object> frame) {
+    // передача аргументов
+    private int passArgs(IceVm vm, VmFrame<String, Object> frame) {
+        int size = vm.stack().size();
         for (VmInstr instr : args.getVarContainer()) {
             instr.run(vm, frame);
+        }
+        return vm.stack().size()-size;
+    }
+
+    // проверка на колличество параметров и аргументов
+    private void checkArgs(int parameterAmount, int argsAmount) {
+        if (parameterAmount != argsAmount) {
+            IceVm.logger.error(addr,
+                    "args and params not match: (expected:"+parameterAmount+",got:"+argsAmount +")");
         }
     }
 }

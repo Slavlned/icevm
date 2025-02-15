@@ -1,6 +1,9 @@
 package com.slavlend.Vm.Instructions;
 
-import com.slavlend.Vm.*;
+import com.slavlend.Vm.IceVm;
+import com.slavlend.Vm.VmFrame;
+import com.slavlend.Vm.VmInAddr;
+import com.slavlend.Vm.VmInstr;
 import lombok.Getter;
 
 /*
@@ -20,7 +23,7 @@ public class VmInstrArith implements VmInstr {
     }
 
     @Override
-    public void run(IceVm vm, VmFrame<Object> frame) {
+    public void run(IceVm vm, VmFrame<String, Object> frame) {
         Object r = vm.pop(addr);
         Object l = vm.pop(addr);
         if (r == null) {
@@ -40,7 +43,15 @@ public class VmInstrArith implements VmInstr {
             }
             case "-" -> vm.push((float)l - (float)r);
             case "*" -> vm.push((float)l * (float)r);
-            case "/" -> vm.push((float)l / (float)r);
+            case "/" -> {
+                float right = (float)r;
+                float left = (float)l;
+                if (right == 0 && !Float.isInfinite(left) && !Float.isNaN(left) && left != 0 && left != 1 && left != -1) {
+                    IceVm.logger.error(addr, "division by zero!");
+                    return;
+                }
+                vm.push(left / right);
+            }
             case "%" -> vm.push((float)l % (float)r);
             default -> IceVm.logger.error(addr, "operator not found: " + operator);
         }

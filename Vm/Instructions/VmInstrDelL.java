@@ -1,7 +1,10 @@
 package com.slavlend.Vm.Instructions;
 
-import com.slavlend.Vm.*;
 import lombok.Getter;
+import com.slavlend.Vm.IceVm;
+import com.slavlend.Vm.VmFrame;
+import com.slavlend.Vm.VmInAddr;
+import com.slavlend.Vm.VmInstr;
 
 /*
 Удаляет локальную переменную в ВМ
@@ -19,7 +22,7 @@ public class VmInstrDelL implements VmInstr {
     }
 
     @Override
-    public void run(IceVm vm, VmFrame<Object> frame) {
+    public void run(IceVm vm, VmFrame<String, Object> frame) {
         frame.getValues().remove(name);
     }
 

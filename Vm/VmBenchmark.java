@@ -11,7 +11,7 @@ public class VmBenchmark {
      * Запускает таймер
      */
     public void start() {
-        startTime = System.currentTimeMillis();
+        startTime = System.nanoTime();
     }
 
     /**
@@ -21,6 +21,6 @@ public class VmBenchmark {
      * время выполнения в секундах.
      */
     public double end() {
-        return ((Long)(System.currentTimeMillis()-startTime)).doubleValue()/1000.0;
+        return ((Long)(System.nanoTime()-startTime)).doubleValue()/1000000.0;
     }
 }

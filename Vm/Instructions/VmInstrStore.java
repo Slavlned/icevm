@@ -26,7 +26,7 @@ public class VmInstrStore implements VmInstr {
     }
 
     @Override
-    public void run(IceVm vm, VmFrame<Object> frame) {
+    public void run(IceVm vm, VmFrame<String, Object> frame) {
         if (!hasPrevious) {
             passArgs(vm, frame);
             frame.set(name, vm.pop(addr));
@@ -37,13 +37,13 @@ public class VmInstrStore implements VmInstr {
                 vmObj.getScope().set(name, vm.pop(addr));
             } else {
                 passArgs(vm, frame);
-                ((VmClass) last).getModValues().set(name, vm.pop(addr));
+                ((VmClass) last).getModValues().set(name, VmLazy.of(addr, vm.pop(addr)));
             }
         }
     }
 
     // помещает аргументы в стек
-    private void passArgs(IceVm vm, VmFrame<Object> frame) {
+    private void passArgs(IceVm vm, VmFrame<String, Object> frame) {
         for (VmInstr instr : args.getVarContainer()) {
             instr.run(vm, frame);
         }
@@ -56,6 +56,9 @@ public class VmInstrStore implements VmInstr {
 
     @Override
     public void print() {
+        for (VmInstr i : args.getVarContainer()) {
+            i.print();
+        }
         System.out.println(this);
     }
 }

@@ -1,8 +1,11 @@
 package com.slavlend.Vm.Instructions;
 
 import com.slavlend.Parser.Operator;
-import com.slavlend.Vm.*;
 import lombok.Getter;
+import com.slavlend.Vm.IceVm;
+import com.slavlend.Vm.VmFrame;
+import com.slavlend.Vm.VmInAddr;
+import com.slavlend.Vm.VmInstr;
 
 /*
 Логика VM
@@ -21,7 +24,7 @@ public class VmInstrLgcl implements VmInstr {
     }
 
     @Override
-    public void run(IceVm vm, VmFrame<Object> frame) {
+    public void run(IceVm vm, VmFrame<String, Object> frame) {
         Object r = vm.pop(addr);
         Object l = vm.pop(addr);
         switch (operator.operator) {

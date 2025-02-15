@@ -1,6 +1,7 @@
 package com.slavlend.Vm;
 
 import com.slavlend.Compiler.Compiler;
+import com.slavlend.Vm.Instructions.VmInstrMakeClosure;
 import com.slavlend.Vm.Instructions.VmInstrPush;
 import com.slavlend.Vm.Instructions.VmInstrStoreL;
 import lombok.Getter;
@@ -39,7 +40,9 @@ public class VmCode {
      */
     public void defineFunction(VmInAddr addr, VmFunction fn) {
         if (writeTo.isEmpty()) {
+            // если глобальный скоуп - то пишем ещё и с полным именем
             Compiler.iceVm.getFunctions().getValues().put(fn.getName(), fn);
+            Compiler.iceVm.getFunctions().getValues().put(fn.getFullName(), fn);
         } else {
             if (writeTo.lastElement() instanceof VmClass vmClass) {
                 if (!vmClass.isModuleFunctionsWriting()) {
@@ -54,6 +57,8 @@ public class VmCode {
                     vmFunc.visitInstr(new VmInstrPush(addr, fn));
                     // помещение функции "как переменная"
                     vmFunc.visitInstr(new VmInstrStoreL(addr, fn.getName()));
+                    // замыкание функции
+                    Compiler.code.visitInstr(new VmInstrMakeClosure(addr, fn.getName()));
                 }
                 else {
                     IceVm.logger.error(addr, "cannot define function in block, except: class, function.");
@@ -68,11 +73,15 @@ public class VmCode {
      */
     public void defineClass(VmInAddr addr, VmClass clazz) {
         if (writeTo.isEmpty()) {
+            // С обычным именем
             Compiler.iceVm.getClasses().getValues().put(clazz.getName(), clazz);
+            // С полным именем
+            Compiler.iceVm.getClasses().getValues().put(clazz.getFullName(), clazz);
         } else {
             IceVm.logger.error(addr,"cannot define classes in block, except class");
         }
     }
+
     /**
      Запись инструкции
      @param instr - инструкция для запииси
@@ -100,5 +109,14 @@ public class VmCode {
      */
     public void startWrite(VmInstrContainer c) {
         this.writeTo.push(c);
+    }
+
+    // в строку
+    @Override
+    public String toString() {
+        return "VmCode{" +
+                "instructions=" + instructions +
+                ", writeTo=" + writeTo +
+                '}';
     }
 }

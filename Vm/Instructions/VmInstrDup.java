@@ -20,7 +20,7 @@ public class VmInstrDup implements VmInstr {
     }
 
     @Override
-    public void run(IceVm vm, VmFrame<Object> frame) {
+    public void run(IceVm vm, VmFrame<String, Object> frame) {
         Object o = vm.pop(addr);
         vm.push(o);
         vm.push(o);
